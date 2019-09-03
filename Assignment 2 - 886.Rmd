@@ -1,0 +1,95 @@
+---
+title: "Assignment 2 - 886"
+author: "Zexuan Fang"
+date: "03/09/2019"
+output: pdf_document
+---
+# Q3 
+## a. 
+## We first by finding the log-Likelihood function of the Poisson model, Poisson was chosen since we are estimating for ce of mortality, which was founf to be the following: 
+$$
+lnL \propto (-\sum_xE_x^c\times Bc^x + \sum_xd_x \times ln(E_x^c\times Bc^x))
+$$
+## following from that, we constructed the above log-likelihood function in R containing the two parameters, B & c, and used nlm() function to find the maximum likelihood estimates. 
+
+```{r, message=FALSE, warning=FALSE}
+age5.7 <- c(70:75)
+
+Ecx5.7 <- c(1000, 1005, 1010, 1008, 1006, 998)
+
+ObservedDeaths5.7 <- c(80, 90, 95, 105, 115, 125)
+
+Log.like.5.7 <- function(Gompertz){
+  sum(Ecx5.7*Gompertz[1]*Gompertz[2]^(age5.7) - sum(ObservedDeaths5.7*log(Ecx5.7*Gompertz[1]*Gompertz[2]^(age5.7))))
+}
+
+mu70 <- 0.002
+mu.rateOfIncrease <- 0.0001
+Gom.start <- c(mu70, exp(mu.rateOfIncrease))
+nlm(Log.like.5.7, Gom.start, hessian = TRUE) #Initial value what to put?
+Gom.est
+
+grad.est5.7 <- Gom.est[1] * Gom.est[2]^age5.7
+grad.est5.7
+```
+
+
+## b. 
+## First, we need to compute the estimates for the parameters in the given relationship equation. This was done in R by constructing a weighted least square function for our mortality estimates as following:
+$$
+f(a,b) = \sum_xE_x \times (\hat q_x - \frac{e^{a+bx}}{1+e^{a+bx}})^2
+$$
+Subsequently, the above equation was minimised in R by using the nlm() function. 
+
+```{r}
+age5.8 <- c(30:49)
+
+Ex5.8 <- c(70000, 66672, 68375, 65420, 61779, 66091, 68514, 69560, 65000, 66279, 67300, 65368, 65391, 62917, 66537, 62302, 62302, 62145, 63856, 61097, 61110)
+
+ObservedDeaths5.8 <- c(39, 43, 34, 31, 23, 50, 48, 43, 48, 47, 62, 63, 84, 86, 120, 121, 122, 162, 151, 184)
+
+mort.est <- ObservedDeaths5.8/Ex5.8
+
+
+
+wls5.8 <- function(p,x){
+  mort.model <- exp(p[1]+p[2]*x)/(1+exp(p[1]+p[2]*x))
+  sum(Ex5.8*(mort.est-mort.model)^2)
+}
+
+nlm(wls5.8, p = c(0.001,0.1), x = age5.8, hessian = TRUE)
+
+
+```
+
+
+
+## c. 
+## First, we need to compute the estimates for the parameters in the given relationship equation. This was done in R by constructing a weighted least square function for our mortality estimates as following:
+$$
+f(a,b) = \sum_xE_x \times (\hat q_x - (a+bq_x^s))^2
+$$
+Subsequently, the above equation was minimised in R by using the nlm() function. 
+
+
+```{r}
+age5.9 <- c(47:67)
+Ex5.9 <- c(166, 187, 218, 243, 276, 302, 347, 390, 430, 494, 558, 628, 701, 813, 917, 1040, 1182, 1299, 1432, 1596, 1752)
+ObservedDeaths5.9 <- c(2, 2, 4, 6, 2,4, 7, 3, 9, 9, 8, 11, 14, 18, 18, 24, 30, 43, 41, 54, 64)
+StdTable <- c(0.00505, 0.00570, 0.00644, 0.00728, 0.00826, 0.00930, 0.01051, 0.01184, 0.01331, 0.01492, 0.01668, 0.01859, 0.02065, 0.02287, 0.02525, 0.02778, 0.03049, 0.03339, 0.03648, 0.03978, 0.04332)
+
+mort.est5.9 <- ObservedDeaths5.9/Ex5.9
+
+wls5.9 <- function(p, x){
+  sum(Ex5.9*(mort.est5.9-(p[1]+p[2]*x))^2)
+}
+
+param.est5.9 <- nlm(wls5.9, p = c(0.001, 0.1), x = StdTable)$estimate
+
+grad.est5.9 <- param.est5.9[1] + param.est5.9[2]*StdTable
+grad.est5.9
+```
+
+
+
+
