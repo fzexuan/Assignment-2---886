@@ -1,0 +1,98 @@
+---
+title: "Ass2 - Q2"
+author: "Zexuan Fang"
+date: "05/09/2019"
+output: pdf_document
+---
+
+```{r, echo=FALSE,  message=FALSE, warning=FALSE}
+Ex2 <- c(15518, 19428, 21594, 21890, 19174, 15775, 11414, 6993, 3276, 1096, 201)
+true.deaths <- c(65, 144, 219, 378, 465, 557, 685, 644, 471, 217, 67)
+ex.deaths <- c(73.9, 134.6, 223.9, 346.3, 468.1, 600.2, 675.5, 637.4, 458.7, 240.6, 61.4)
+
+crude.mort2 <- true.deaths/Ex2
+grad.mort2 <- ex.deaths/Ex2
+m <- length(Ex2)
+###################################################
+# 1.Chi-Square Test 
+varx <- ex.deaths * (1-grad.mort2)
+zx <- (true.deaths - ex.deaths)/sqrt(varx)
+zx.square <- zx^2
+ts.chisq <- sum(zx.square)
+chisq.std <- qchisq(0.95, 11:6)
+chisq.std
+
+
+###################################################
+
+#  2.Standardised Deviations Test 
+E <- c(0.16*11, 0.34*11, 0.34*11, 0.16*11)
+E 
+A <- c(sum(zx < -1),sum(zx>-1 & zx < 0),sum(zx > 0 & zx < 1), sum(zx >1))
+ts.std.dv <- sum((A-E)^2/E)
+chisq2 <- qchisq(0.95,3)
+
+
+#################################################
+
+# 3. Cumulative Deviations Test 
+ts.cd.1 <- sum(true.deaths - ex.deaths)
+ts.cd.2 <- sqrt(sum(ex.deaths*(1-ex.deaths/Ex2)))
+ts.cd <- ts.cd.1/ts.cd.2
+
+#################################################
+
+# 4. sign test
+k1 <- qbinom(0.025, 11, 0.5)
+ts.st  <- sum(zx >0)
+threshold <- 11-k1
+ts.st
+
+################################################
+
+# 5. Grouping of Sign Test 
+
+n1 <- sum(zx >0)
+n2 <- sum(zx <0)
+
+
+s <- 0
+counter <- 1
+while (s < 0.05) {
+  s <- s + (choose(n1-1, counter-1)*choose(n2+1,counter))/choose(n1+n2,n1)
+  print(counter)
+  counter <- counter +1
+}
+
+k2 <- counter +1
+
+
+################################################
+
+# 6. Serial Correlations Test 
+zbar1 <- sum(zx/(m-1)) - zx[11]/10
+zbar2 <- sum(zx/(m-1)) - zx[1]/10
+
+st.sc1 <- 0
+st.sc2 <- 0
+st.sc3 <- 0
+for (i in 1:10) {
+  st.sc1[i] <- (zx[i]-zbar1)*(zx[i+1]-zbar2)
+  st.sc2[i] <- (zx[i] - zbar1)^2
+  st.sc3[i] <- (zx[i+1] - zbar2)^2
+} 
+
+st.sc <- (sum(st.sc1)/sqrt(sum(st.sc2)*sum(st.sc3))) * (m-1)
+
+##############################################
+
+# 7. Smoothness Test 
+
+first_diff <- diff(grad.mort2)
+second_diff <- diff(first_diff)
+third_diff <- diff(second_diff)
+ts.smooth <- abs(third_diff)*(7^3)
+smoothness <- ts.smooth - grad.mort2 
+```
+
+
