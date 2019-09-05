@@ -1,0 +1,104 @@
+---
+title: "Ass2-Q3"
+author: "Zexuan Fang"
+date: "05/09/2019"
+output: pdf_document
+---
+# a (5.7).
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+age5.7 <- c(70:75)
+
+Ecx5.7 <- c(1000, 1005, 1010, 1008, 1006, 998)
+
+ObservedDeaths5.7 <- c(80, 90, 95, 105, 115, 125)
+
+Log.like.5.7 <- function(Gompertz){
+ - sum(-Ecx5.7*Gompertz[1]*Gompertz[2]^(age5.7) + 
+        ObservedDeaths5.7*log(Ecx5.7*Gompertz[1]*Gompertz[2]^(age5.7))
+       -log(factorial(ObservedDeaths5.7)))
+}
+
+crude.mu5.7 <- ObservedDeaths5.7/Ecx5.7
+log.mu <- log(crude.mu5.7)
+
+regression5.7 <- lm(log.mu~age5.7)
+B.initial <- round(exp(regression5.7$coefficients[1]), digits = 5)
+c.initial <- round(exp(regression5.7$coefficients[2]), digits = 5)
+
+Gom.est <- nlm(Log.like.5.7, Gompertz <- c(B.initial, c.initial), 
+               hessian = TRUE)$estimate 
+
+
+grad.est5.7 <- Gom.est[1] * Gom.est[2]^age5.7
+
+plot(age5.7, grad.est5.7, type = "l", col = "red", xlab = "Age", ylab = "Rates")
+points(age5.7,crude.mu5.7, col = "blue")
+```
+
+
+# b (5.8)
+
+```{r, warning=FALSE,  message=FALSE, echo=FALSE}
+age5.8 <- c(30:49)
+
+Ex5.8 <- c(70000, 66672, 68375, 65420, 61779, 66091, 68514, 
+           69560, 65000, 66279, 67300, 65368, 65391, 62917, 
+           66537, 62302, 62145, 63856, 61097, 61110)
+
+
+ObservedDeaths5.8 <- c(39, 43, 34, 31, 23, 50, 48, 43, 48, 
+                       47, 62, 63, 84, 86, 120, 121, 122, 162,
+                       151, 184)
+
+crude.mort5.8 <- ObservedDeaths5.8/Ex5.8
+
+log.mort <-log(crude.mort5.8/(1-crude.mort5.8))
+
+regression5.8 <- lm(log.mort~age5.8)
+a.initial <- round(regression5.8$coefficients[1], digits = 2)
+b.initial <- round(regression5.8$coefficients[2], digits = 2)
+
+wls5.8 <- function(p,x){
+  sum(Ex5.8*(log.mort-p[1]-p[2]*x)^2)
+}
+
+param5.8 <- nlm(wls5.8, p <- c(a.initial,b.initial), x = age5.8, hessian = TRUE)$estimate
+
+grad.est5.8 <- exp(param5.8[1]+param5.8[2]*age5.8)/(1+exp(param5.8[1]+param5.8[2]*age5.8))
+
+plot(age5.8, grad.est5.8, type = "l", col = "red",xlab = "Age", ylab = "Rates")
+points(age5.8, crude.mort5.8, col = "blue")
+
+```
+
+# c (5.9)
+```{r, warning=FALSE,  message=FALSE, echo=FALSE}
+age5.9 <- c(47:67)
+Ex5.9 <- c(166, 187, 218, 243, 276, 302, 347, 390, 430, 494,
+           558, 628, 701, 813, 917, 1040, 1182, 1299, 1432, 
+           1596, 1752)
+ObservedDeaths5.9 <- c(2, 2, 4, 6, 2,4, 7, 3, 9, 9, 8, 11, 14,
+                       18, 18, 24, 30, 43, 41, 54, 64)
+StdTable <- c(0.00505, 0.00570, 0.00644, 0.00728, 0.00826, 0.00930, 
+              0.01051, 0.01184, 0.01331, 0.01492, 0.01668, 0.01859,
+              0.02065, 0.02287, 0.02525, 0.02778, 0.03049, 0.03339, 
+              0.03648, 0.03978, 0.04332)
+
+mort.est5.9 <- ObservedDeaths5.9/Ex5.9
+
+wls5.9 <- function(p, x){
+  sum(Ex5.9*(mort.est5.9-(p[1]+p[2]*x))^2)
+}
+
+param.est5.9 <- nlm(wls5.9, p = c(0.007, 0.6), x = StdTable)$estimate
+param.est5.9
+
+grad.est5.9 <- param.est5.9[1] + param.est5.9[2]*StdTable
+grad.est5.9
+crude.est5.9 <- ObservedDeaths5.9/Ex5.9
+
+plot(age5.9,grad.est5.9, type = "l", col = "red",xlab = "Age", ylab = "Rates")
+points(age5.9, crude.est5.9, col = "blue")
+```
+
+
