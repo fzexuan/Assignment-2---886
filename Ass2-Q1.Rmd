@@ -1,0 +1,37 @@
+---
+title: "Assignment Q1"
+author: "Zexuan Fang"
+date: "05/09/2019"
+output: pdf_document
+---
+
+```{r}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(lubridate)
+
+# binomial model moments matching
+q_301 <- 2/8
+
+# nearest policy anniversary for live G & J
+DOP_lifeG_30 <-  as.Date(format(as.Date("29/10/95", format = "%d/%m/%y"), "19%y-%m-%d"))
+DOP_lifeJ_30 <-  as.Date(format(as.Date("6/03/96", format = "%d/%m/%y"), "19%y-%m-%d"))
+
+# date of death for live G & J
+DOD_lifeG <- as.Date(format(as.Date("21/04/96", format = "%d/%m/%y"), "19%y-%m-%d"))
+DOD_lifeJ <- as.Date(format(as.Date("17/02/97", format = "%d/%m/%y"), "19%y-%m-%d"))
+
+
+# time difference between policy anniversary and death date for live G & J
+t1 <- time_length(difftime(DOD_lifeG, DOP_lifeG_30), "days") / 365.25
+t2 <- time_length(difftime(DOD_lifeJ, DOP_lifeJ_30), "days") / 365.25
+
+# negative likelihood function to be minimised
+MLE_b <- function(qb){
+  -((1-qb)^(6))*(1-(1-qb)^t1)*(1-(1-qb)^t2)
+}
+
+# estimate of q30
+q_30 <- nlm(MLE_b, qb <- 0.25)$estimate
+```
+
+
